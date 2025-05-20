@@ -1,0 +1,13 @@
+fastapi
+geopy
+httptools
+pandas
+pip-chill
+python-dotenv
+pyyaml
+requests
+shapely
+uvicorn
+uvloop
+watchgod
+websockets

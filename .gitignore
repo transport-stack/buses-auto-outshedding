@@ -1,0 +1,39 @@
+__pycache__/
+venv/
+start_script.sh
+*.db
+*.json
+.idea
+.DS_Store
+# Python bytecode
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.env
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Local data files
+# Keep the data directory but ignore its contents
+data/*
+!data/.gitkeep
