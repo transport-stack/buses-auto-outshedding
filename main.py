@@ -88,21 +88,21 @@ def return_data(dd: str, mm: str, yyyy: str):
     except json.JSONDecodeError:
         raise HTTPException(status_code=500, detail=f"Error parsing data file for {dd}/{mm}/{yyyy}")
 
+def _enrich_data_with_depot_info(data: dict) -> list:
+    """Helper function to add depot information to bus data."""
+    bus_depot_map = get_bus_depot_map()
+    enriched_values = list(data.values())
+    for bus in enriched_values:
+        bus['depot'] = bus_depot_map.get(bus['bus_number'], 'Unknown')
+    return enriched_values
+
+
 @app.get("/api/bus_data/{yyyy}/{mm}/{dd}")
 def get_all_bus_data(yyyy: str, mm: str, dd: str):
     """API endpoint for the dashboard to get all bus data for a specific date"""
     try:
         data = return_data(dd, mm, yyyy)
-        
-        # Enhance data with depot information
-        bus_depot_map = get_bus_depot_map()
-        for bus in data:
-            if bus['bus_number'] in bus_depot_map:
-                bus['depot'] = bus_depot_map[bus['bus_number']]
-            else:
-                bus['depot'] = 'Unknown'
-                
-        return data
+        return _enrich_data_with_depot_info(data)
     except HTTPException as e:
         if e.status_code == 404:
             return []
@@ -112,30 +112,21 @@ def get_all_bus_data(yyyy: str, mm: str, dd: str):
 @app.get("/get_depot_data/{yyyy}/{mm}/{dd}/{depot}/{shift}")
 def return_depot_data(dd: str, mm: str, yyyy: str, depot: str, shift: str):
     """Return data for a specific depot and shift on a specific date"""
-    file_path = Path(DATA_DIR) / f"{dd}_{mm}_{yyyy}.json"
-    try:
-        with open(file_path, 'r') as file:
-            data = json.load(file)
-        
-        # Normalize shift parameter
-        shift = 'm' if shift.lower() == 'morning' else 'e'
-        
-        # Get bus to depot mapping
-        bus_depot_map = get_bus_depot_map()
-        
-        # Filter data for the requested depot and shift
-        depot_data = []
-        for entry in data:
-            if entry['bus_number'] not in bus_depot_map:
-                continue
-            if bus_depot_map[entry['bus_number']] == depot and entry['shift'] == shift:
-                depot_data.append(entry)
-                
-        return depot_data
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail=f"Data for {dd}/{mm}/{yyyy} not found")
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail=f"Error parsing data file for {dd}/{mm}/{yyyy}")
+    data = return_data(dd, mm, yyyy)
+    enriched_data = _enrich_data_with_depot_info(data)
+
+    # Normalize shift parameter
+    shift = 'm' if shift.lower() in ['morning', 'm'] else 'e'
+
+    depot_data = [
+        bus for bus in enriched_data
+        if bus.get('depot') == depot and bus.get('shift') == shift
+    ]
+
+    if not depot_data:
+        raise HTTPException(status_code=404, detail=f"No data found for {depot} during {shift} shift on {dd}/{mm}/{yyyy}")
+
+    return depot_data
 
 @app.get("/api/bus_data/{yyyy}/{mm}/{dd}/{depot}/{shift}")
 def get_depot_bus_data(yyyy: str, mm: str, dd: str, depot: str, shift: str):
