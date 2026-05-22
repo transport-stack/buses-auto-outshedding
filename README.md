@@ -23,7 +23,7 @@ A system for tracking bus outshedding and inshedding times at transit depots. Th
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/automated-depot-management.git
+   git clone https://github.com/transport-stack/buses-auto-outshedding.git
    cd automated-depot-management
    ```
 
@@ -48,7 +48,7 @@ A system for tracking bus outshedding and inshedding times at transit depots. Th
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/automated-depot-management.git
+   git clone https://github.com/transport-stack/buses-auto-outshedding.git
    cd automated-depot-management
    ```
 
